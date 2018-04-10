@@ -2,27 +2,80 @@
 
 use FastD\Application;
 use Monolog\Handler\StreamHandler;
-use Monolog\Logger;
 
 /**
  * @author    jan huang <bboyjanhuang@gmail.com>
  * @copyright 2016
  *
  * @see      https://www.github.com/janhuang
- * @see      http://www.fast-d.cn/
+ * @see      https://fastdlabs.com
  */
 class HelpersTest extends \FastD\TestCase
 {
     public function createApplication()
     {
-        $app = new Application(__DIR__.'/app/no-logger');
-
-        return $app;
+        return new Application(__DIR__.'/../app');
     }
 
     public function testFunctionApp()
     {
         $this->assertEquals('fast-d', app()->getName());
+    }
+
+    public function testFunctionRoute()
+    {
+        $router = route();
+        $map = $router->aliasMap;
+        $this->assertArrayHasKey('GET', $map);
+    }
+
+    public function testFunctionConfig()
+    {
+        $this->assertEquals('fast-d', config()->get('name'));
+        $this->assertArrayHasKey('database', config()->all());
+    }
+
+    /**
+     * @expectedException \FastD\Container\NotFoundException
+     */
+    public function testFunctionRequestInApplicationNotBootstrap()
+    {
+        request();
+    }
+
+    public function testFunctionRequestInApplicationHandleRequest()
+    {
+        $this->handleRequest($this->request('GET', '/'));
+        $request = request();
+        $this->assertEquals('/', $request->getUri()->getPath());
+        $this->assertEquals('GET', $request->getMethod());
+    }
+
+    public function testFunctionResponseInApplicationNotBootstrapped()
+    {
+        response();
+    }
+
+    public function testFunctionResponseInApplicationHandleRequest()
+    {
+        $response = $this->handleRequest($this->request('GET', '/'));
+    }
+
+    public function testFunctionJson()
+    {
+        $response = json(['foo' => 'bar']);
+        $this->assertEquals(
+            (string) $response->getContents(),
+            (string) (new \FastD\Http\JsonResponse(['foo' => 'bar']))->getContents()
+        );
+    }
+
+    /**
+     * @expectedException \Exception
+     */
+    public function testFunctionAbort()
+    {
+        abort('400');
     }
 
     public function testFunctionLogger()
@@ -40,17 +93,6 @@ class HelpersTest extends \FastD\TestCase
         $item->set('world');
         cache()->save($item);
         $this->assertTrue(cache()->getItem('hello')->isHit());
-    }
-
-    public function testFunctionConfig()
-    {
-        $this->assertEquals('fast-d', config()->get('name'));
-        $this->assertArrayHasKey('database', config()->all());
-    }
-
-    public function testFunctionRequest()
-    {
-        //        $this->assertNull(request());
     }
 
     public function testFunctionDatabase()

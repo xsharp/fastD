@@ -4,7 +4,7 @@
  * @copyright 2016
  *
  * @see      https://www.github.com/janhuang
- * @see      http://www.fast-d.cn/
+ * @see      https://fastdlabs.com
  */
 
 namespace FastD\Servitization\Server;
@@ -27,7 +27,10 @@ class UDPServer extends UDP
      * @param $data
      * @param $clientInfo
      *
-     * @return mixed
+     * @return int|mixed
+     *
+     * @throws \Exception
+     * @throws \FastD\Packet\Exceptions\PacketException
      */
     public function doPacket(swoole_server $server, $data, $clientInfo)
     {
@@ -43,5 +46,7 @@ class UDPServer extends UDP
         $response = app()->handleRequest($request);
         $server->sendto($clientInfo['address'], $clientInfo['port'], (string) $response->getBody());
         app()->shutdown($request, $response);
+
+        return 0;
     }
 }

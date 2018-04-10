@@ -4,18 +4,19 @@
  * @copyright 2016
  *
  * @see      https://www.github.com/janhuang
- * @see      http://www.fast-d.cn/
+ * @see      https://fastdlabs.com
  */
 
 namespace FastD;
 
-use FastD\Console\ConfigDump;
-use FastD\Console\ControllerCreate;
-use FastD\Console\ModelCreate;
-use FastD\Console\RouteDump;
-use FastD\Console\SeedCreate;
-use FastD\Console\SeedRun;
+use FastD\Console\Config;
+use FastD\Console\Controller;
+use FastD\Console\Migration;
+use FastD\Console\Model;
+use FastD\Console\Routing;
 use Symfony\Component\Console\Application as Symfony;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Output\OutputInterface;
 
 /**
  * Class AppConsole.
@@ -29,16 +30,21 @@ class Console extends Symfony
      */
     public function __construct(Application $app)
     {
-        parent::__construct($app->getName(), Application::VERSION);
+        $version = Application::VERSION;
 
-        $this->addCommands([
-            new ModelCreate(),
-            new ControllerCreate(),
-            new RouteDump(),
-            new ConfigDump(),
-            new SeedCreate(),
-            new SeedRun(),
-        ]);
+        parent::__construct(<<<EOF
+                    
+           ______           __  ____        
+          / ____/___ ______/ /_/ __ \       
+         / /_  / __ `/ ___/ __/ / / /       
+        / __/ / /_/ (__  ) /_/ /_/ /        
+       /_/    \__,_/____/\__/_____/          
+                                       <info>{$version}</info>
+                                                                        
+EOF
+);
+
+        restore_exception_handler();
 
         $this->registerCommands();
     }
@@ -48,7 +54,18 @@ class Console extends Symfony
      */
     public function registerCommands()
     {
-        foreach (config()->get('consoles', []) as $console) {
+        $this->addCommands([
+            new Model(),
+            new Controller(),
+            new Routing(),
+            new Config(),
+            new Migration(),
+        ]);
+
+        $consoles = config()->get('consoles', []);
+        $consoles = array_unique($consoles);
+
+        foreach ($consoles as $console) {
             $this->add(new $console());
         }
 
@@ -58,5 +75,27 @@ class Console extends Symfony
                 $this->add(new $command());
             }
         }
+    }
+
+    /**
+     * @param InputInterface  $input
+     * @param OutputInterface $output
+     *
+     * @return int
+     *
+     * @throws \Throwable
+     */
+    public function doRun(InputInterface $input, OutputInterface $output)
+    {
+        app()->add('input', $input);
+        app()->add('output', $output);
+
+        try {
+            return parent::doRun($input, $output);
+        } catch (\Exception $exception) {
+            app()->handleException($exception);
+        }
+
+        throw $exception;
     }
 }

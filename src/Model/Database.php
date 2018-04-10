@@ -4,14 +4,14 @@
  * @copyright 2016
  *
  * @see      https://www.github.com/janhuang
- * @see      http://www.fast-d.cn/
+ * @see      https://fastdlabs.com
  */
 
 namespace FastD\Model;
 
+use Exception;
 use Medoo\Medoo;
 use PDO;
-use PDOException;
 
 /**
  * Class Database.
@@ -19,7 +19,7 @@ use PDOException;
 class Database extends Medoo
 {
     /**
-     * @var array|null
+     * @var array
      */
     protected $config = [];
 
@@ -62,10 +62,7 @@ class Database extends Medoo
     {
         try {
             return parent::query($query);
-        } catch (PDOException $e) {
-            if ('HY000' !== $e->getCode()) {
-                throw $e;
-            }
+        } catch (Exception $e) {
             $this->reconnect();
 
             return parent::query($query);
@@ -75,29 +72,35 @@ class Database extends Medoo
     /**
      * @param $query
      *
-     * @return bool|\PDOStatement
+     * @return bool|int
+     *
+     * @throws \ErrorException
      */
     public function exec($query)
     {
         try {
             return parent::exec($query);
-        } catch (PDOException $e) {
-            if ('HY000' !== $e->getCode()) {
-                throw $e;
-            }
+        } catch (Exception $e) {
             $this->reconnect();
 
             return parent::exec($query);
         }
     }
 
+    /**
+     * @param $table
+     * @param $join
+     * @param null $where
+     *
+     * @return bool
+     */
     public function has($table, $join, $where = null)
     {
         $column = null;
 
         $query = $this->query('SELECT EXISTS('.$this->selectContext($table, $join, $column, $where, 1).')');
 
-        if ($query && intval($query->fetchColumn()) === 1) {
+        if ($query && 1 === intval($query->fetchColumn())) {
             return true;
         }
 

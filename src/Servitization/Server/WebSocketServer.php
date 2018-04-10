@@ -4,7 +4,7 @@
  * @copyright 2016
  *
  * @see      https://www.github.com/janhuang
- * @see      http://www.fast-d.cn/
+ * @see      https://fastdlabs.com
  */
 
 namespace FastD\Servitization\Server;
@@ -27,7 +27,10 @@ class WebSocketServer extends WebSocket
      * @param swoole_server          $server
      * @param swoole_websocket_frame $frame
      *
-     * @return int
+     * @return int|mixed
+     *
+     * @throws \Exception
+     * @throws \FastD\Packet\Exceptions\PacketException
      */
     public function doMessage(swoole_server $server, swoole_websocket_frame $frame)
     {
@@ -42,7 +45,11 @@ class WebSocketServer extends WebSocket
             }
         }
         $response = app()->handleRequest($request);
-        $server->push($frame->fd, (string) $response->getBody());
+        $fd = null !== ($fd = $response->getFileDescriptor()) ? $fd : $frame->fd;
+        if (false === $server->connection_info($fd)) {
+            return -1;
+        }
+        $server->push($fd, (string) $response->getBody());
         app()->shutdown($request, $response);
 
         return 0;

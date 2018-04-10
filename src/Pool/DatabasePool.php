@@ -4,7 +4,7 @@
  * @copyright 2016
  *
  * @see      https://www.github.com/janhuang
- * @see      http://www.fast-d.cn/
+ * @see      https://fastdlabs.com
  */
 
 namespace FastD\Pool;
@@ -38,12 +38,13 @@ class DatabasePool implements PoolInterface
 
     /**
      * @param $key
+     * @param $force
      *
      * @return Database
      */
-    public function getConnection($key)
+    public function getConnection($key, $force = false)
     {
-        if (!isset($this->connections[$key])) {
+        if ($force || !isset($this->connections[$key])) {
             if (!isset($this->config[$key])) {
                 throw new \LogicException(sprintf('No set %s database', $key));
             }
@@ -73,7 +74,7 @@ class DatabasePool implements PoolInterface
     public function initPool()
     {
         foreach ($this->config as $name => $config) {
-            $this->getConnection($name);
+            $this->getConnection($name, true);
         }
     }
 }

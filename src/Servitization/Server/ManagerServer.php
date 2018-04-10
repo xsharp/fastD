@@ -4,7 +4,7 @@
  * @copyright 2016
  *
  * @see      https://www.github.com/janhuang
- * @see      http://www.fast-d.cn/
+ * @see      https://fastdlabs.com
  */
 
 namespace FastD\Servitization\Server;
@@ -42,9 +42,11 @@ class ManagerServer extends TCP
             case 'quit':
                 $server->send($fd, 'connection closed');
                 $server->close($fd);
+
                 break;
             case 'reload':
                 $this->getSwoole()->reload();
+
                 break;
             case 'status':
             default:
@@ -54,6 +56,7 @@ class ManagerServer extends TCP
                     $status .= '['.date('Y-m-d H:i:s').']: '.$key.': '.$value.PHP_EOL;
                 }
                 $server->send($fd, $status);
+
                 break;
         }
     }

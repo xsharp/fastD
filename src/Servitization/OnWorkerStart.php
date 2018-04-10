@@ -4,7 +4,7 @@
  * @copyright 2016
  *
  * @see      https://www.github.com/janhuang
- * @see      http://www.fast-d.cn/
+ * @see      https://fastdlabs.com
  */
 
 namespace FastD\Servitization;
@@ -25,10 +25,14 @@ trait OnWorkerStart
     {
         parent::onWorkerStart($server, $worker_id);
 
-        foreach (app() as $service) {
-            if ($service instanceof PoolInterface) {
-                $service->initPool();
+        try {
+            foreach (app() as $service) {
+                if ($service instanceof PoolInterface) {
+                    $service->initPool();
+                }
             }
+        } catch (\Exception $e) {
+            echo $e->getMessage().PHP_EOL;
         }
     }
 }

@@ -4,7 +4,7 @@
  * @copyright 2016
  *
  * @see      https://www.github.com/janhuang
- * @see      http://www.fast-d.cn/
+ * @see      https://fastdlabs.com
  */
 
 namespace FastD\Logger;
@@ -18,7 +18,6 @@ class ErrorHandler extends HandlerAbstract
     {
         return [
             'ip' => get_local_ip(),
-            'status' => response()->getStatusCode(),
             'get' => request()->getQueryParams(),
             'post' => request()->getParsedBody(),
             'msg' => exception()->getMessage(),
